@@ -1,0 +1,67 @@
+---
+- hosts: localhost
+  vars:
+    country: "US"
+    province: "NY"
+    city: "NY"
+    org: "fun-vpns"
+    email: "funguy@fun-vpns.com"
+    ou: "fun"
+    server: "server"
+  remote_user: "root"
+  tasks:
+  - name: install easyrsa
+    apt:
+      name: easy-rsa
+      state: latest
+  - name: remove ca directory if it exists
+    file:
+      path: /srv/openvpn-ca
+      state: absent
+  - name: make ca directory
+    command: "make-cadir /srv/openvpn-ca"
+  - name: remove sample values
+    lineinfile:
+      dest: /srv/openvpn-ca/vars
+      line: "{{ item }}"
+      state: absent
+    with_items:
+      - 'export KEY_COUNTRY="US"'
+      - 'export KEY_PROVINCE="CA"'
+      - 'export KEY_CITY="SanFrancisco"'
+      - 'export KEY_ORG="Fort-Funston"'
+      - 'export KEY_EMAIL="me@myhost.mydomain"'
+      - 'export KEY_OU="MyOrganizationalUnit"'
+      - 'export KEY_NAME="EasyRSA"'
+  - name: add location specific values
+    lineinfile:
+      dest: /srv/openvpn-ca/vars
+      regexp: "{{ item }}"
+      state: absent
+    with_items:
+      - 'export KEY_COUNTRY="{{ country }}"'
+      - 'export KEY_PROVINCE="{{ province }}"'
+      - 'export KEY_CITY="{{ city }}"'
+      - 'export KEY_ORG="{{ org }}"'
+      - 'export KEY_EMAIL="{{ email }}"'
+      - 'export KEY_OU="{{ ou }}"'
+      - 'export KEY_NAME="{{ server }}"'
+  - name: clean env
+    shell: ". /srv/openvpn-ca/vars && ./clean-all"
+    args:
+      chdir: /srv/openvpn-ca/
+    sudo: yes
+  - name: build root ca
+    shell: ". /srv/openvpn-ca/vars && ./pkitool --initca --keysize 1024"
+    args:
+      chdir: /srv/openvpn-ca/
+    sudo: yes
+  - name: build server certificate
+      shell: ". /srv/openvpn-ca/vars && ./pkitool --server server"
+    args:
+      chdir: /srv/openvpn-ca/
+    sudo: yes
+  - name: generate DH parameters
+    command: "./build-dh"
+    args:
+      chdir: /srv/openvpn-ca/
