@@ -3,6 +3,9 @@ variable "local_ip" {}
 variable "cidr_block" {}
 variable "cidr_subnet" {}
 variable "private_key" {}
+#variable "certificate_email" {}
+#variable "subdomain_name" {}
+
 
 data "aws_ami" "ubuntu" {
     most_recent           = true
@@ -115,19 +118,18 @@ resource "aws_instance" "vpn" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo add-apt-repository -y ppa:certbot/certbot",
+#      "sudo add-apt-repository -y ppa:certbot/certbot",
       "sudo apt update",
       "sudo apt upgrade -y",
-      "sudo apt install software-properties-common openvpnas openssl certbot -y",
-      "sudo service openvpnas stop",
+#      "sudo apt install software-properties-common openvpnas openssl certbot -y",
+#      "sudo service openvpnas stop",
 #      "sudo certbot certonly --standalone --non-interactive --agree-tos --email ${var.certificate_email} --domains ${var.subdomain_name} --pre-hook 'service openvpnas stop' --post-hook 'service openvpnas start'",
-      "sudo service openvpnas start",
-#      "sudo wget -P ~/ https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.5/EasyRSA-nix-3.0.5.tgz",
-#      "sudo tar xvf EasyRSA-nix-3.0.5.tgz",
-#      "cp rsa_vars EasyRSA-3.0.5/vars" # adjust to fit your specifics
-#      "sudo ./EasyRSA-3.0.5/easyrsa init-pki",
-#      "sudo ./EasyRSA-3.0.5/easyrsa build-ca nopass",
-#      "",
+#      "sudo service openvpnas start",
+      "wget -P ~/ https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.5/EasyRSA-nix-3.0.5.tgz",
+      "tar xvf EasyRSA-nix-3.0.5.tgz",
+      "cp rsa_vars EasyRSA-3.0.5/vars", # adjust to fit your specifics
+      "echo -en '\n\n\n\n\n\n\n'| ./EasyRSA-3.0.5/easyrsa init-pki",
+      "./EasyRSA-3.0.5/easyrsa build-ca nopass",
     ]
 
     connection {
