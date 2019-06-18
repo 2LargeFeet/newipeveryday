@@ -1,5 +1,17 @@
 ---
 - hosts: localhost
+  environment:
+    EASY_RSA: "`pwd`"
+    OPENSSL: "openssl"
+    PKCS11TOOL: "pkcs11-tool"
+    GREP: "grep"
+    KEY_CONFIG: "`$EASY_RSA/whichopensslcnf $EASY_RSA`"
+    KEY_DIR: "$EASY_RSA/keys"
+    PKCS11_MODULE_PATH: "dummy"
+    PKCS11_PIN: "dummy"
+    KEY_SIZE: 2048
+    CA_EXPIRE: 3650
+    KEY_EXPIRE: 3650
   vars:
     country: "US"
     province: "NY"
@@ -37,7 +49,6 @@
     lineinfile:
       dest: /srv/openvpn-ca/vars
       regexp: "{{ item }}"
-      state: absent
     with_items:
       - 'export KEY_COUNTRY="{{ country }}"'
       - 'export KEY_PROVINCE="{{ province }}"'
@@ -46,22 +57,95 @@
       - 'export KEY_EMAIL="{{ email }}"'
       - 'export KEY_OU="{{ ou }}"'
       - 'export KEY_NAME="{{ server }}"'
+#  - name: clean env
+#    shell: ". vars && ./clean-all"
+#    args:
+#      chdir: /srv/openvpn-ca/
+#    sudo: yes
+#  - name: build root ca
+#    shell: ". vars && ./pkitool --initca --keysize 1024"
+#    args:
+#      chdir: /srv/openvpn-ca/
+#    sudo: yes
+#  - name: build server certificate
+#    shell: ". vars && ./pkitool --server server"
+#    args:
+#      chdir: /srv/openvpn-ca/
+#    sudo: yes
+#  - name: generate DH parameters
+#    command: "./build-dh"
+#    args:
+#      chdir: /srv/openvpn-ca/
   - name: clean env
-    shell: ". /srv/openvpn-ca/vars && ./clean-all"
-    args:
+    shell:
+      cmd: . vars && ./clean-all
       chdir: /srv/openvpn-ca/
-    sudo: yes
   - name: build root ca
-    shell: ". /srv/openvpn-ca/vars && ./pkitool --initca --keysize 1024"
-    args:
+    shell:
+      cmd: . vars && ./pkitool --initca --keysize 1024
       chdir: /srv/openvpn-ca/
-    sudo: yes
   - name: build server certificate
-      shell: ". /srv/openvpn-ca/vars && ./pkitool --server server"
-    args:
+    shell:
+      cmd: . vars && ./pkitool --server server
       chdir: /srv/openvpn-ca/
-    sudo: yes
   - name: generate DH parameters
-    command: "./build-dh"
-    args:
+    shell:
+      cmd: ./build-dh
       chdir: /srv/openvpn-ca/
+
+  ## CA via Ansible
+  ---
+  - name: install PKI
+    hosts: localhost
+    become: true
+    vars:
+#      country: "US"
+#      province: "NY"
+#      city: "NY"
+#      org: "fun-vpns"
+#      email: "funguy@fun-vpns.com"
+#      ou: "fun"
+#      server: "server"
+    remote_user: "root"
+    tasks:
+
+      - name: install applications
+        apt:
+          name: ['python-openssl', 'openvpn']
+
+      - name: create keypair
+        openssl_privatekey:
+          path: ipeveryday.pem
+          size: 2048
+
+      - name: create csr
+        openssl_csr:
+          path: ipeveryday.csr
+          privatekey_path: ipeveryday.pem
+          common_name: ipeveryday.com
+
+      - name: create CA cert
+        openssl_certificate:
+          path: ipeveryday.crt
+          privatekey_path: ipeveryday.pem
+          csr_path: ipeveryday.csr
+          provider: selfsigned
+
+      - name: create client key
+        openssl_privatekey:
+          path: client.pem
+          size: 2048
+
+      - name: create client csr
+        openssl_csr:
+          path: client.csr
+          privatekey_path: client.pem
+          common_name: client.ipeveryday.com
+
+      - name: create client cert from ca
+        openssl_certificate:
+          path: client.ipeveryday.crt
+          csr_path: client.csr
+          ownca_path: ipeveryday.crt
+          ownca_privatekey_path: ipeveryday.pem
+          provider: ownca
