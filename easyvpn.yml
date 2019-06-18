@@ -113,39 +113,99 @@
         apt:
           name: ['python-openssl', 'openvpn']
 
+##Cryptographic files
+      - name: Generate DH Parameters
+        openssl_dhparam:
+          path: /etc/openvpn/dh2048.pem
+          size: 2048
+
       - name: create keypair
         openssl_privatekey:
-          path: ipeveryday.pem
+          path: /etc/openvpn/ipeveryday.pem
           size: 2048
+
+      - name: generate ta key
+        command: openvpn --genkey --secret /etc/openvpn/ta.key
 
       - name: create csr
         openssl_csr:
-          path: ipeveryday.csr
-          privatekey_path: ipeveryday.pem
+          path: /etc/openvpn/ipeveryday.csr
+          privatekey_path: /etc/openvpn/ipeveryday.pem
           common_name: ipeveryday.com
 
       - name: create CA cert
         openssl_certificate:
-          path: ipeveryday.crt
-          privatekey_path: ipeveryday.pem
-          csr_path: ipeveryday.csr
+          path: /etc/openvpn/ipeveryday.crt
+          privatekey_path: /etc/openvpn/ipeveryday.pem
+          csr_path: /etc/openvpn/ipeveryday.csr
           provider: selfsigned
 
       - name: create client key
         openssl_privatekey:
-          path: client.pem
+          path: /etc/openvpn/client.pem
           size: 2048
 
       - name: create client csr
         openssl_csr:
-          path: client.csr
-          privatekey_path: client.pem
+          path: /etc/openvpn/client.csr
+          privatekey_path: /etc/openvpn/client.pem
           common_name: client.ipeveryday.com
 
       - name: create client cert from ca
         openssl_certificate:
-          path: client.ipeveryday.crt
-          csr_path: client.csr
-          ownca_path: ipeveryday.crt
-          ownca_privatekey_path: ipeveryday.pem
+          path: /etc/openvpn/client.ipeveryday.crt
+          csr_path: /etc/openvpn/client.csr
+          ownca_path: /etc/openvpn/ipeveryday.crt
+          ownca_privatekey_path: /etc/openvpn/ipeveryday.pem
           provider: ownca
+
+      - name: Copy server.conf to openvpn dir
+        copy:
+          src: server.conf
+          dest: /etc/openvpn/server.conf
+
+      - name: Allow forwarding
+        lineinfile:
+          path: /etc/sysctl.conf
+          line: net.ipv4.ip_forward=1
+
+      - name: Allow forwarding ufw
+        lineinfile:
+          path: /etc/default/ufw
+          regexp: '^DEFAULT_FORWARD_POLICY='
+          line: DEFAULT_FORWARD_POLICY="ACCEPT"
+
+      - name: Update values
+        command: sysctl -p
+
+      - name: Copy iptables config
+        template:
+          src: before.rules.j2
+          dest: /etc/ufw/before.rules
+
+## Configure UFW
+      - name: Tune UFW
+        ufw:
+          state: enabled
+
+      - name: Allow 443
+        ufw:
+          rule: limit
+          port: "{{ item }}"
+          proto: tcp
+        with_items:
+          - 443
+          - 22
+
+      - name: Deny everything else
+        ufw:
+          rule: deny
+          proto: any
+          insert: last-ipv4
+
+## Start OpenVPN
+      - name: Make sure OpenVPN is running
+        systemd:
+          name: openvpn@server
+          state: started
+          enabled: yes
