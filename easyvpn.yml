@@ -106,6 +106,7 @@
 #      email: "funguy@fun-vpns.com"
 #      ou: "fun"
 #      server: "server"
+      crypto_dir: /etc/openvpn/
     remote_user: "root"
     tasks:
 
@@ -113,57 +114,90 @@
         apt:
           name: ['python-openssl', 'openvpn']
 
+      - name: make dir
+        file:
+          path: "{{ item }}"
+          state: directory
+        with_items:
+          - client-config
+          - keys
+          - crts
+
 ##Cryptographic files
       - name: Generate DH Parameters
         openssl_dhparam:
-          path: /etc/openvpn/dh2048.pem
+          path: "{{ crypto_dir }}/dh2048.pem"
           size: 2048
 
       - name: create keypair
         openssl_privatekey:
-          path: /etc/openvpn/ipeveryday.pem
+          path: "{{ crypto_dir }}/ipeveryday.key"
           size: 2048
 
       - name: generate ta key
-        command: openvpn --genkey --secret /etc/openvpn/ta.key
+        command: "openvpn --genkey --secret {{ crypto_dir }}/ta.key"
+        register: ta.key
 
       - name: create csr
         openssl_csr:
-          path: /etc/openvpn/ipeveryday.csr
-          privatekey_path: /etc/openvpn/ipeveryday.pem
+          path: "{{ crypto_dir }}/ipeveryday.csr"
+          privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
           common_name: ipeveryday.com
 
       - name: create CA cert
         openssl_certificate:
-          path: /etc/openvpn/ipeveryday.crt
-          privatekey_path: /etc/openvpn/ipeveryday.pem
-          csr_path: /etc/openvpn/ipeveryday.csr
+          path: "{{ crypto_dir }}/ipeveryday.crt"
+          privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
+          csr_path: "{{ crypto_dir }}/ipeveryday.csr"
           provider: selfsigned
 
       - name: create client key
         openssl_privatekey:
-          path: /etc/openvpn/client.pem
+          path: "{{ crypto_dir }}/client.key"
           size: 2048
+        register: client.key
 
       - name: create client csr
         openssl_csr:
-          path: /etc/openvpn/client.csr
-          privatekey_path: /etc/openvpn/client.pem
+          path: "{{ crypto_dir }}/client.csr"
+          privatekey_path: "{{ crypto_dir }}/client.key"
           common_name: client.ipeveryday.com
 
       - name: create client cert from ca
         openssl_certificate:
-          path: /etc/openvpn/client.ipeveryday.crt
-          csr_path: /etc/openvpn/client.csr
-          ownca_path: /etc/openvpn/ipeveryday.crt
-          ownca_privatekey_path: /etc/openvpn/ipeveryday.pem
+          path: "{{ crypto_dir }}/client.ipeveryday.crt"
+          csr_path: "{{ crypto_dir }}/client.csr"
+          ownca_path: "{{ crypto_dir }}/ipeveryday.crt"
+          ownca_privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
           provider: ownca
 
+##Create configs
       - name: Copy server.conf to openvpn dir
         copy:
           src: server.conf
-          dest: /etc/openvpn/server.conf
+          dest: "{{ crypto_dir }}/server.conf"
 
+      - name: copy client config template to server
+        template:
+          src: client.conf.j2
+          dest: client-config/client.ovpn
+
+      - name: create client certificate
+        blockinfile:
+          block: |
+            "{{ item.label }}"
+            "{{ item.crypto }}"
+            "{{ item.terminator }}"
+          path: client-config/client.ovpn
+          marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.label }}"
+          backup: yes
+        with_items:
+          - { label: <ca>, crypto: "{{ lookup('file', '{{ crypto_dir }}/ipeveryday.crt') }}", terminator: </ca>}
+          - { label: <cert>, crypto: "{{ lookup('file', '{{ crypto_dir }}/client.ipeveryday.crt') }}", terminator: </cert>}
+          - { label: <key>, crypto: "{{ lookup('file', '{{ crypto_dir }}/client.key') }}", terminator: </key>}
+          - { label: <tls-auth>, crypto: "{{ lookup('file', '{{ crypto_dir }}/ta.key') }}", terminator: </tls-auth>}
+
+##Networking
       - name: Allow forwarding
         lineinfile:
           path: /etc/sysctl.conf
