@@ -124,7 +124,7 @@ resource "aws_instance" "vpn" {
       "sudo apt install aptitude",
       "sudo apt install python-pip",
       "pip install ansible",
-      "ansible-playbook ipeveryday.yml --extra-vars='{"server_ip": ${aws_instance.vpn.public_ip}'"
+      "sudo ansible-playbook ipeveryday.yml --extra-vars='{"server_ip": ${aws_instance.vpn.public_ip}'"
 #      "sudo apt install software-properties-common openvpnas openssl certbot -y",
 #      "sudo service openvpnas stop",
 #      "sudo certbot certonly --standalone --non-interactive --agree-tos --email ${var.certificate_email} --domains ${var.subdomain_name} --pre-hook 'service openvpnas stop' --post-hook 'service openvpnas start'",
