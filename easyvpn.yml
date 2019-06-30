@@ -129,7 +129,7 @@
           path: "{{ crypto_dir }}/dh2048.pem"
           size: 2048
 
-      - name: create keypair
+      - name: create CA keypair
         openssl_privatekey:
           path: "{{ crypto_dir }}/ipeveryday.key"
           size: 2048
@@ -138,11 +138,11 @@
         command: "openvpn --genkey --secret {{ crypto_dir }}/ta.key"
         register: ta.key
 
-      - name: create csr
+      - name: create CA csr
         openssl_csr:
           path: "{{ crypto_dir }}/ipeveryday.csr"
           privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
-          common_name: ipeveryday.com
+          common_name: "{{ ansible_hostname }}"
 
       - name: create CA cert
         openssl_certificate:
@@ -150,6 +150,26 @@
           privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
           csr_path: "{{ crypto_dir }}/ipeveryday.csr"
           provider: selfsigned
+
+      - name: create server key
+        openssl_privatekey:
+          path: "{{ crypto_dir }}/server.key"
+          size: 2048
+        register: server.key
+
+      - name: create server csr
+        openssl_csr:
+          path: "{{ crypto_dir }}/server.csr"
+          privatekey_path: "{{ crypto_dir }}/server.key"
+          common_name: server.ipeveryday.com
+
+      - name: create server cert from ca
+        openssl_certificate:
+          path: "{{ crypto_dir }}/server.ipeveryday.crt"
+          csr_path: "{{ crypto_dir }}/server.csr"
+          ownca_path: "{{ crypto_dir }}/ipeveryday.crt"
+          ownca_privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
+          provider: ownca
 
       - name: create client key
         openssl_privatekey:
