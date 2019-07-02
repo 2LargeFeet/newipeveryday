@@ -6,20 +6,20 @@ variable "private_key" {}
 #variable "certificate_email" {}
 #variable "subdomain_name" {}
 
-
 data "aws_ami" "ubuntu" {
-    most_recent           = true
-    owners                = ["099720109477"] # Canonical
-    filter {
-        name              = "name"
-        values            = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
-    }
+  most_recent           = true
+  owners                = ["099720109477"] # Canonical
+  filter {
+    name              = "name"
+    values            = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+  }
 
-    filter {
-        name              = "virtualization-type"
-        values            = ["hvm"]
-    }
+  filter {
+    name              = "virtualization-type"
+    values            = ["hvm"]
+  }
 }
+
 
 resource "aws_vpc" "main" {
   cidr_block              = "${var.cidr_block}"
@@ -121,10 +121,11 @@ resource "aws_instance" "vpn" {
 #      "sudo add-apt-repository -y ppa:certbot/certbot",
       "sudo apt update",
       "sudo apt upgrade -y",
-      "sudo apt install aptitude",
-      "sudo apt install python-pip",
+      "sudo apt install aptitude -y",
+      "sudo apt install python-pip -y",
       "pip install ansible",
-      "sudo ansible-playbook ipeveryday.yml --extra-vars='{"server_ip": ${aws_instance.vpn.public_ip}'"
+      "git clone https://github.com/2LargeFeet/tfvpn.git",
+      "sudo ansible-playbook tfvpn/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}',"
 #      "sudo apt install software-properties-common openvpnas openssl certbot -y",
 #      "sudo service openvpnas stop",
 #      "sudo certbot certonly --standalone --non-interactive --agree-tos --email ${var.certificate_email} --domains ${var.subdomain_name} --pre-hook 'service openvpnas stop' --post-hook 'service openvpnas start'",

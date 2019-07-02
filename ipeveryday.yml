@@ -1,0 +1,265 @@
+---
+- hosts: localhost
+  environment:
+    EASY_RSA: "`pwd`"
+    OPENSSL: "openssl"
+    PKCS11TOOL: "pkcs11-tool"
+    GREP: "grep"
+    KEY_CONFIG: "`$EASY_RSA/whichopensslcnf $EASY_RSA`"
+    KEY_DIR: "$EASY_RSA/keys"
+    PKCS11_MODULE_PATH: "dummy"
+    PKCS11_PIN: "dummy"
+    KEY_SIZE: 2048
+    CA_EXPIRE: 3650
+    KEY_EXPIRE: 3650
+  vars:
+    country: "US"
+    province: "NY"
+    city: "NY"
+    org: "fun-vpns"
+    email: "funguy@fun-vpns.com"
+    ou: "fun"
+    server: "server"
+  remote_user: "root"
+  tasks:
+  - name: install easyrsa
+    apt:
+      name: easy-rsa
+      state: latest
+  - name: remove ca directory if it exists
+    file:
+      path: /srv/openvpn-ca
+      state: absent
+  - name: make ca directory
+    command: "make-cadir /srv/openvpn-ca"
+  - name: remove sample values
+    lineinfile:
+      dest: /srv/openvpn-ca/vars
+      line: "{{ item }}"
+      state: absent
+    with_items:
+      - 'export KEY_COUNTRY="US"'
+      - 'export KEY_PROVINCE="CA"'
+      - 'export KEY_CITY="SanFrancisco"'
+      - 'export KEY_ORG="Fort-Funston"'
+      - 'export KEY_EMAIL="me@myhost.mydomain"'
+      - 'export KEY_OU="MyOrganizationalUnit"'
+      - 'export KEY_NAME="EasyRSA"'
+  - name: add location specific values
+    lineinfile:
+      dest: /srv/openvpn-ca/vars
+      regexp: "{{ item }}"
+    with_items:
+      - 'export KEY_COUNTRY="{{ country }}"'
+      - 'export KEY_PROVINCE="{{ province }}"'
+      - 'export KEY_CITY="{{ city }}"'
+      - 'export KEY_ORG="{{ org }}"'
+      - 'export KEY_EMAIL="{{ email }}"'
+      - 'export KEY_OU="{{ ou }}"'
+      - 'export KEY_NAME="{{ server }}"'
+#  - name: clean env
+#    shell: ". vars && ./clean-all"
+#    args:
+#      chdir: /srv/openvpn-ca/
+#    sudo: yes
+#  - name: build root ca
+#    shell: ". vars && ./pkitool --initca --keysize 1024"
+#    args:
+#      chdir: /srv/openvpn-ca/
+#    sudo: yes
+#  - name: build server certificate
+#    shell: ". vars && ./pkitool --server server"
+#    args:
+#      chdir: /srv/openvpn-ca/
+#    sudo: yes
+#  - name: generate DH parameters
+#    command: "./build-dh"
+#    args:
+#      chdir: /srv/openvpn-ca/
+  - name: clean env
+    shell:
+      cmd: . vars && ./clean-all
+      chdir: /srv/openvpn-ca/
+  - name: build root ca
+    shell:
+      cmd: . vars && ./pkitool --initca --keysize 1024
+      chdir: /srv/openvpn-ca/
+  - name: build server certificate
+    shell:
+      cmd: . vars && ./pkitool --server server
+      chdir: /srv/openvpn-ca/
+  - name: generate DH parameters
+    shell:
+      cmd: ./build-dh
+      chdir: /srv/openvpn-ca/
+
+  ## CA via Ansible
+  ---
+  - name: install PKI
+    hosts: localhost
+    become: true
+    vars:
+#      country: "US"
+#      province: "NY"
+#      city: "NY"
+#      org: "fun-vpns"
+#      email: "funguy@fun-vpns.com"
+#      ou: "fun"
+#      server: "server"
+      crypto_dir: /etc/openvpn/
+    remote_user: "root"
+    tasks:
+
+      - name: install applications
+        apt:
+          name: ['python-openssl', 'openvpn']
+
+      - name: make dir
+        file:
+          path: "{{ item }}"
+          state: directory
+        with_items:
+          - client-config
+          - keys
+          - crts
+
+##Cryptographic files
+      - name: Generate DH Parameters
+        openssl_dhparam:
+          path: "{{ crypto_dir }}/dh2048.pem"
+          size: 2048
+
+      - name: create CA keypair
+        openssl_privatekey:
+          path: "{{ crypto_dir }}/ipeveryday.key"
+          size: 2048
+
+      - name: generate ta key
+        command: "openvpn --genkey --secret {{ crypto_dir }}/ta.key"
+        register: ta.key
+
+      - name: create CA csr
+        openssl_csr:
+          path: "{{ crypto_dir }}/ipeveryday.csr"
+          privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
+          common_name: "{{ ansible_hostname }}"
+
+      - name: create CA cert
+        openssl_certificate:
+          path: "{{ crypto_dir }}/ipeveryday.crt"
+          privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
+          csr_path: "{{ crypto_dir }}/ipeveryday.csr"
+          provider: selfsigned
+
+      - name: create server key
+        openssl_privatekey:
+          path: "{{ crypto_dir }}/server.key"
+          size: 2048
+        register: server.key
+
+      - name: create server csr
+        openssl_csr:
+          path: "{{ crypto_dir }}/server.csr"
+          privatekey_path: "{{ crypto_dir }}/server.key"
+          common_name: server.ipeveryday.com
+
+      - name: create server cert from ca
+        openssl_certificate:
+          path: "{{ crypto_dir }}/server.ipeveryday.crt"
+          csr_path: "{{ crypto_dir }}/server.csr"
+          ownca_path: "{{ crypto_dir }}/ipeveryday.crt"
+          ownca_privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
+          provider: ownca
+
+      - name: create client key
+        openssl_privatekey:
+          path: "{{ crypto_dir }}/client.key"
+          size: 2048
+        register: client.key
+
+      - name: create client csr
+        openssl_csr:
+          path: "{{ crypto_dir }}/client.csr"
+          privatekey_path: "{{ crypto_dir }}/client.key"
+          common_name: client.ipeveryday.com
+
+      - name: create client cert from ca
+        openssl_certificate:
+          path: "{{ crypto_dir }}/client.ipeveryday.crt"
+          csr_path: "{{ crypto_dir }}/client.csr"
+          ownca_path: "{{ crypto_dir }}/ipeveryday.crt"
+          ownca_privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
+          provider: ownca
+
+##Create configs
+      - name: Copy server.conf to openvpn dir
+        copy:
+          src: server.conf
+          dest: "{{ crypto_dir }}/server.conf"
+
+      - name: copy client config template to server
+        template:
+          src: client.conf.j2
+          dest: client-config/client.ovpn
+
+      - name: create client certificate
+        blockinfile:
+          block: |
+            "{{ item.label }}"
+            "{{ item.crypto }}"
+            "{{ item.terminator }}"
+          path: client-config/client.ovpn
+          marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.label }}"
+          backup: yes
+        with_items:
+          - { label: <ca>, crypto: "{{ lookup('file', '{{ crypto_dir }}/ipeveryday.crt') }}", terminator: </ca>}
+          - { label: <cert>, crypto: "{{ lookup('file', '{{ crypto_dir }}/client.ipeveryday.crt') }}", terminator: </cert>}
+          - { label: <key>, crypto: "{{ lookup('file', '{{ crypto_dir }}/client.key') }}", terminator: </key>}
+          - { label: <tls-auth>, crypto: "{{ lookup('file', '{{ crypto_dir }}/ta.key') }}", terminator: </tls-auth>}
+
+##Networking
+      - name: Allow forwarding
+        lineinfile:
+          path: /etc/sysctl.conf
+          line: net.ipv4.ip_forward=1
+
+      - name: Allow forwarding ufw
+        lineinfile:
+          path: /etc/default/ufw
+          regexp: '^DEFAULT_FORWARD_POLICY='
+          line: DEFAULT_FORWARD_POLICY="ACCEPT"
+
+      - name: Update values
+        command: sysctl -p
+
+      - name: Copy iptables config
+        template:
+          src: before.rules.j2
+          dest: /etc/ufw/before.rules
+
+## Configure UFW
+      - name: Tune UFW
+        ufw:
+          state: enabled
+
+      - name: Allow 443
+        ufw:
+          rule: limit
+          port: "{{ item }}"
+          proto: tcp
+        with_items:
+          - 443
+          - 22
+
+      - name: Deny everything else
+        ufw:
+          rule: deny
+          proto: any
+          insert: last-ipv4
+
+## Start OpenVPN
+      - name: Make sure OpenVPN is running
+        systemd:
+          name: openvpn@server
+          state: started
+          enabled: yes
