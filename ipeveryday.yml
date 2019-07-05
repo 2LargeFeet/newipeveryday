@@ -1,99 +1,3 @@
----
-- hosts: localhost
-  environment:
-    EASY_RSA: "`pwd`"
-    OPENSSL: "openssl"
-    PKCS11TOOL: "pkcs11-tool"
-    GREP: "grep"
-    KEY_CONFIG: "`$EASY_RSA/whichopensslcnf $EASY_RSA`"
-    KEY_DIR: "$EASY_RSA/keys"
-    PKCS11_MODULE_PATH: "dummy"
-    PKCS11_PIN: "dummy"
-    KEY_SIZE: 2048
-    CA_EXPIRE: 3650
-    KEY_EXPIRE: 3650
-  vars:
-    country: "US"
-    province: "NY"
-    city: "NY"
-    org: "fun-vpns"
-    email: "funguy@fun-vpns.com"
-    ou: "fun"
-    server: "server"
-  remote_user: "root"
-  tasks:
-  - name: install easyrsa
-    apt:
-      name: easy-rsa
-      state: latest
-  - name: remove ca directory if it exists
-    file:
-      path: /srv/openvpn-ca
-      state: absent
-  - name: make ca directory
-    command: "make-cadir /srv/openvpn-ca"
-  - name: remove sample values
-    lineinfile:
-      dest: /srv/openvpn-ca/vars
-      line: "{{ item }}"
-      state: absent
-    with_items:
-      - 'export KEY_COUNTRY="US"'
-      - 'export KEY_PROVINCE="CA"'
-      - 'export KEY_CITY="SanFrancisco"'
-      - 'export KEY_ORG="Fort-Funston"'
-      - 'export KEY_EMAIL="me@myhost.mydomain"'
-      - 'export KEY_OU="MyOrganizationalUnit"'
-      - 'export KEY_NAME="EasyRSA"'
-  - name: add location specific values
-    lineinfile:
-      dest: /srv/openvpn-ca/vars
-      regexp: "{{ item }}"
-    with_items:
-      - 'export KEY_COUNTRY="{{ country }}"'
-      - 'export KEY_PROVINCE="{{ province }}"'
-      - 'export KEY_CITY="{{ city }}"'
-      - 'export KEY_ORG="{{ org }}"'
-      - 'export KEY_EMAIL="{{ email }}"'
-      - 'export KEY_OU="{{ ou }}"'
-      - 'export KEY_NAME="{{ server }}"'
-#  - name: clean env
-#    shell: ". vars && ./clean-all"
-#    args:
-#      chdir: /srv/openvpn-ca/
-#    sudo: yes
-#  - name: build root ca
-#    shell: ". vars && ./pkitool --initca --keysize 1024"
-#    args:
-#      chdir: /srv/openvpn-ca/
-#    sudo: yes
-#  - name: build server certificate
-#    shell: ". vars && ./pkitool --server server"
-#    args:
-#      chdir: /srv/openvpn-ca/
-#    sudo: yes
-#  - name: generate DH parameters
-#    command: "./build-dh"
-#    args:
-#      chdir: /srv/openvpn-ca/
-  - name: clean env
-    shell:
-      cmd: . vars && ./clean-all
-      chdir: /srv/openvpn-ca/
-  - name: build root ca
-    shell:
-      cmd: . vars && ./pkitool --initca --keysize 1024
-      chdir: /srv/openvpn-ca/
-  - name: build server certificate
-    shell:
-      cmd: . vars && ./pkitool --server server
-      chdir: /srv/openvpn-ca/
-  - name: generate DH parameters
-    shell:
-      cmd: ./build-dh
-      chdir: /srv/openvpn-ca/
-
-  ## CA via Ansible
   ---
   - name: install PKI
     hosts: localhost
@@ -112,7 +16,11 @@
 
       - name: install applications
         apt:
-          name: ['python-openssl', 'openvpn']
+          name: openvpn
+
+      - name: install python applications
+        apt:
+          name: pyopenssl
 
       - name: make dir
         file:

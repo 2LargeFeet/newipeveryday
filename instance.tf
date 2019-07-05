@@ -123,7 +123,7 @@ resource "aws_instance" "vpn" {
       "sudo apt upgrade -y",
       "sudo apt install aptitude -y",
       "sudo apt install python-pip -y",
-      "pip install ansible",
+      "sudo pip install ansible-playbook",
       "git clone https://github.com/2LargeFeet/tfvpn.git",
       "sudo ansible-playbook tfvpn/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}',"
 #      "sudo apt install software-properties-common openvpnas openssl certbot -y",
