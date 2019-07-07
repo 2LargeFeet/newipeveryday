@@ -163,7 +163,7 @@
      ufw:
        rule: deny
        proto: any
-       insert: last-ipv4
+       insert_relative_to: last-ipv4
 
 ## Start OpenVPN
    - name: Make sure OpenVPN is running
