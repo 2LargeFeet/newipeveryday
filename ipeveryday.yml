@@ -19,7 +19,7 @@
        name: openvpn
 
    - name: install python applications
-     apt:
+     pip:
        name: pyopenssl
 
    - name: make dir
