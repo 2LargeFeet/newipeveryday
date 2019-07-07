@@ -125,16 +125,7 @@ resource "aws_instance" "vpn" {
       "sudo apt install python-pip -y",
       "sudo pip install ansible",
       "git clone https://github.com/2LargeFeet/tfvpn.git",
-      "sudo ansible-playbook tfvpn/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}',"
-#      "sudo apt install software-properties-common openvpnas openssl certbot -y",
-#      "sudo service openvpnas stop",
-#      "sudo certbot certonly --standalone --non-interactive --agree-tos --email ${var.certificate_email} --domains ${var.subdomain_name} --pre-hook 'service openvpnas stop' --post-hook 'service openvpnas start'",
-#      "sudo service openvpnas start",
-#      "wget -P ~/ https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.5/EasyRSA-nix-3.0.5.tgz",
-#      "tar xvf EasyRSA-nix-3.0.5.tgz",
-#      "cp rsa_vars EasyRSA-3.0.5/vars", # adjust to fit your specifics
-#      "echo -en '\n\n\n\n\n\n\n'| ./EasyRSA-3.0.5/easyrsa init-pki",
-#      "./EasyRSA-3.0.5/easyrsa build-ca nopass",
+      "sudo ansible-playbook tfvpn/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}}'"
     ]
 
     connection {
