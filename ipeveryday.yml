@@ -113,9 +113,9 @@
    - name: create client certificate
      blockinfile:
        block: |
-         "{{ item.label }}"
-         "{{ item.crypto }}"
-         "{{ item.terminator }}"
+         {{ item.label }}
+         {{ item.crypto }}
+         {{ item.terminator }}
        path: client-config/client.ovpn
        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.label }}"
        backup: yes
