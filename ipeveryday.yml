@@ -51,6 +51,7 @@
        path: "{{ crypto_dir }}/ipeveryday.csr"
        privatekey_path: "{{ crypto_dir }}/ipeveryday.key"
        common_name: "{{ ansible_hostname }}"
+       basic_constraints: "CA:true"
 
    - name: create CA cert
      openssl_certificate:
