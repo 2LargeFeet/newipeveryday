@@ -3,8 +3,6 @@ variable "local_ip" {}
 variable "cidr_block" {}
 variable "cidr_subnet" {}
 variable "private_key" {}
-#variable "certificate_email" {}
-#variable "subdomain_name" {}
 
 data "aws_ami" "ubuntu" {
   most_recent           = true
@@ -118,7 +116,6 @@ resource "aws_instance" "vpn" {
 
   provisioner "remote-exec" {
     inline = [
-#      "sudo add-apt-repository -y ppa:certbot/certbot",
       "sudo apt update",
       "sudo apt upgrade -y",
       "sudo apt install aptitude -y",
