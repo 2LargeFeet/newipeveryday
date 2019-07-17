@@ -3,13 +3,6 @@
   hosts: localhost
   become: true
   vars:
-#      country: "US"
-#      province: "NY"
-#      city: "NY"
-#      org: "fun-vpns"
-#      email: "funguy@fun-vpns.com"
-#      ou: "fun"
-#      server: "server"
     crypto_dir: /etc/openvpn/
   remote_user: "root"
   tasks:
