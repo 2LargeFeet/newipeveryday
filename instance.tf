@@ -134,6 +134,10 @@ resource "aws_instance" "vpn" {
       private_key         = "${file(var.private_key)}"
     }
   }
+
+  provisioner "local-exec" {
+    command = "sudo sftp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:tfvpn/client-config/client.ovpn"
+  }
 }
 
 output "ip" {
