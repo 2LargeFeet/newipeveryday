@@ -71,6 +71,11 @@
        path: "{{ crypto_dir }}/server.csr"
        privatekey_path: "{{ crypto_dir }}/server.key"
        common_name: server.ipeveryday.com
+       key_usage:
+         - digitalSignature
+         - keyAgreement
+       extended_key_usage:
+         - serverAuth
 
    - name: create server cert from ca
      openssl_certificate:
@@ -91,6 +96,11 @@
        path: "{{ crypto_dir }}/client.csr"
        privatekey_path: "{{ crypto_dir }}/client.key"
        common_name: client.ipeveryday.com
+       key_usage:
+         - digitalSignature
+         - keyAgreement
+       extended_key_usage:
+         - clientAuth
 
    - name: create client cert from ca
      openssl_certificate:
