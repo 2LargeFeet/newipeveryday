@@ -109,11 +109,6 @@ resource "aws_instance" "vpn" {
   subnet_id               = "${aws_subnet.external.id}"
   associate_public_ip_address = true
 
-#  provisioner "file" {
-#    source      = "rsa_vars"
-#    destination = "~/rsa_vars"
-#  }
-
   provisioner "remote-exec" {
     inline = [
       "sudo apt update",
@@ -133,7 +128,8 @@ resource "aws_instance" "vpn" {
   }
 
   provisioner "local-exec" {
-    command = "sudo sftp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:tfvpn/client-config/client.ovpn"
+    command = "sftp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:tfvpn/client-config/client.ovpn"
+    interpreter = ["C:/Program Files/Git/git-bash"]
   }
 }
 
