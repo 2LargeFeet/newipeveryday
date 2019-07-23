@@ -116,8 +116,8 @@ resource "aws_instance" "vpn" {
       "sudo apt install aptitude -y",
       "sudo apt install python-pip -y",
       "sudo pip install ansible",
-      "git clone https://github.com/2LargeFeet/tfvpn.git",
-      "sudo ansible-playbook tfvpn/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}}'"
+      "git clone https://github.com/2LargeFeet/newipeveryday.git",
+      "sudo ansible-playbook newipeveryday/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}}'"
     ]
 
     connection {
@@ -128,7 +128,7 @@ resource "aws_instance" "vpn" {
   }
 
   provisioner "local-exec" {
-    command = "sftp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:tfvpn/client-config/client.ovpn"
+    command = "sftp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn"
     interpreter = ["C:/Program Files/Git/git-bash"]
   }
 }

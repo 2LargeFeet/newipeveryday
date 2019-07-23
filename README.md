@@ -31,8 +31,8 @@ Instructions:
 8. Run the following commands  
 
         terraform taint aws_instance.vpn  
-        terraform plan   -var-file="secure.tfvars"   -var-file="tfvpn.tfvars"  
-        terraform apply   -var-file="secure.tfvars"   -var-file="tfvpn.tfvars"  
+        terraform plan   -var-file="secure.tfvars"   -var-file="newipeveryday.tfvars"  
+        terraform apply   -var-file="secure.tfvars"   -var-file="newipeveryday.tfvars"  
    (Admittedly, this can be improved)
 
 9. Open OpenVPN. Right click the OpenVPN icon in your toolbar, and click `Connect`.
