@@ -1,8 +1,9 @@
-variable "ssh_key_name" {}
+#variable "ssh_key_name" {}
 variable "local_ip" {}
 variable "cidr_block" {}
 variable "cidr_subnet" {}
 variable "private_key" {}
+variable "private_key_file" {}
 
 data "aws_ami" "ubuntu" {
   most_recent           = true
@@ -104,7 +105,7 @@ resource "aws_security_group" "restrict" {
 resource "aws_instance" "vpn" {
   ami                     = "${data.aws_ami.ubuntu.id}"
   instance_type           = "t2.micro"
-  key_name                = "${var.ssh_key_name}"
+  key_name                = "${var.private_key}"
   vpc_security_group_ids  = ["${aws_security_group.restrict.id}"]
   subnet_id               = "${aws_subnet.external.id}"
   associate_public_ip_address = true
@@ -123,13 +124,14 @@ resource "aws_instance" "vpn" {
     connection {
       type                = "ssh"
       user                = "ubuntu"
-      private_key         = "${file(var.private_key)}"
+      private_key         = "${file(var.private_key_file)}"
     }
   }
 
   provisioner "local-exec" {
     command = "sftp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn"
     interpreter = ["C:/Program Files/Git/git-bash"]
+    working_dir = "/c/'Program Files'/OpenVPN/config"
   }
 }
 
