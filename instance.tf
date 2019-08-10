@@ -4,6 +4,7 @@ variable "cidr_block" {}
 variable "cidr_subnet" {}
 variable "private_key" {}
 variable "private_key_file" {}
+variable "transfer_pass" {}
 
 data "aws_ami" "ubuntu" {
   most_recent           = true
@@ -118,7 +119,7 @@ resource "aws_instance" "vpn" {
       "sudo apt install python-pip -y",
       "sudo pip install ansible",
       "git clone https://github.com/2LargeFeet/newipeveryday.git",
-      "sudo ansible-playbook newipeveryday/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}}'"
+      "sudo ansible-playbook newipeveryday/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}} {\"transfer_pass\": ${var.transfer_pass}}'"
     ]
 
     connection {
@@ -129,9 +130,10 @@ resource "aws_instance" "vpn" {
   }
 
   provisioner "local-exec" {
-    command = "sftp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn"
-    interpreter = ["C:/Program Files/Git/git-bash"]
-    working_dir = "/c/'Program Files'/OpenVPN/config"
+    command = "sudo sftp -i vpn.pem -o 'StrictHostKeyChecking no' transfer:${var.transfer_pass}@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn"
+    interpreter = ["C:/bash.exe"]
+#    interpreter = ["C:/Program Files/Git/git-bash"]
+#    working_dir = "/c/'Program Files'/OpenVPN/config"
   }
 }
 

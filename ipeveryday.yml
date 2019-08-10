@@ -24,6 +24,11 @@
        - keys
        - crts
 
+   - name: make transfer user
+     user:
+       name: transfer
+       password: "{{ transfer_pass }}"
+
 ##Cryptographic files
    - name: Generate DH Parameters
      openssl_dhparam:
@@ -113,6 +118,7 @@
      template:
        src: client.conf.j2
        dest: client-config/client.ovpn
+       group: transfer
 
    - name: create client certificate
      blockinfile:
