@@ -27,7 +27,7 @@
    - name: make transfer user
      user:
        name: transfer
-       password: "{{ transfer_pass }}"
+       password: "{{ transfer_pass | password_hash('sha512') }}"
 
 ##Cryptographic files
    - name: Generate DH Parameters
@@ -134,6 +134,14 @@
        - { label: <cert>, crypto: "{{ lookup('file', '{{ crypto_dir }}/client.ipeveryday.crt') }}", terminator: </cert>}
        - { label: <key>, crypto: "{{ lookup('file', '{{ crypto_dir }}/client.key') }}", terminator: </key>}
        - { label: <tls-auth>, crypto: "{{ lookup('file', '{{ crypto_dir }}/ta.key') }}", terminator: </tls-auth>}
+
+   - name: Copy ovpn file to transfer
+     copy:
+       src: /home/ubuntu/newipeveryday/client-config/client.ovpn
+       dest: /home/transfer/client.ovpn
+       remote_src: yes
+       owner: transfer
+       group: transfer
 
 ##Networking
    - name: Allow forwarding

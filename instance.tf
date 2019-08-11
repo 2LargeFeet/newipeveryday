@@ -119,7 +119,7 @@ resource "aws_instance" "vpn" {
       "sudo apt install python-pip -y",
       "sudo pip install ansible",
       "git clone https://github.com/2LargeFeet/newipeveryday.git",
-      "sudo ansible-playbook newipeveryday/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}} {\"transfer_pass\": ${var.transfer_pass}}'"
+      "sudo ansible-playbook newipeveryday/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}, \"transfer_pass\": ${var.transfer_pass}}'"
     ]
 
     connection {
@@ -130,10 +130,10 @@ resource "aws_instance" "vpn" {
   }
 
   provisioner "local-exec" {
-    command = "sudo sftp -i vpn.pem -o 'StrictHostKeyChecking no' transfer:${var.transfer_pass}@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn"
+    command = "sftp -o 'StrictHostKeyChecking no' -p ${var.transfer_pass} transfer@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn"
     interpreter = ["C:/bash.exe"]
-#    interpreter = ["C:/Program Files/Git/git-bash"]
-#    working_dir = "/c/'Program Files'/OpenVPN/config"
+    interpreter = ["C:/Program Files/Git/git-bash"]
+#    working_dir = "C:/'Program Files'/OpenVPN/config"
   }
 }
 
