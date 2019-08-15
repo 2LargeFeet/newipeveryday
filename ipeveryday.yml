@@ -135,13 +135,19 @@
        - { label: <key>, crypto: "{{ lookup('file', '{{ crypto_dir }}/client.key') }}", terminator: </key>}
        - { label: <tls-auth>, crypto: "{{ lookup('file', '{{ crypto_dir }}/ta.key') }}", terminator: </tls-auth>}
 
-   - name: Copy ovpn file to transfer
-     copy:
+   - name: Create an S3 bucket
+     aws_s3:
+       bucket: newipeveryday
+       object: /
+       mode: create
+       region: us-east-1
+
+   - name: Upload ovpn
+     aws_s3:
+       bucket: newipeveryday
+       object: /client.ovpn
        src: /home/ubuntu/newipeveryday/client-config/client.ovpn
-       dest: /home/transfer/client.ovpn
-       remote_src: yes
-       owner: transfer
-       group: transfer
+       mode: put
 
 ##Networking
    - name: Allow forwarding

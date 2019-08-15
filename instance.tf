@@ -1,4 +1,3 @@
-#variable "ssh_key_name" {}
 variable "local_ip" {}
 variable "cidr_block" {}
 variable "cidr_subnet" {}
@@ -113,6 +112,7 @@ resource "aws_instance" "vpn" {
 
   provisioner "remote-exec" {
     inline = [
+      "sleep 10",
       "sudo apt update",
       "sudo apt upgrade -y",
       "sudo apt install aptitude -y",
@@ -130,10 +130,8 @@ resource "aws_instance" "vpn" {
   }
 
   provisioner "local-exec" {
-    command = "sftp -o 'StrictHostKeyChecking no' -p ${var.transfer_pass} transfer@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn"
-    interpreter = ["C:/bash.exe"]
-    interpreter = ["C:/Program Files/Git/git-bash"]
-#    working_dir = "C:/'Program Files'/OpenVPN/config"
+    command = "scp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn client.ovpn"
+    interpreter = ["PowerShell", "-Command"]
   }
 }
 
