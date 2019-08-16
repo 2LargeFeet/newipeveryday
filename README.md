@@ -8,6 +8,8 @@ Alternatively, this tool can be edited so that sensitive vars are read from the 
 
 You will also need the ssh client enabled in windows 10 to use the transfer local-exec terraform command at the end. Otherwise, it's no big deal. It will fail and you'll need to use something like winscp to grab the client.ovpn file using scp or sftp. If you want to enable the SSH Client, here's a guide. https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse
 
+Keep in mind, this tool will create a server in your AWS account restricted to your IP address. It's up to you to destroy it if you don't want it anymore.
+
 Instructions to setup NewIPEveryday:
 
 1. Install Git on your computer. Clone this repo to your local computer.
