@@ -112,7 +112,7 @@ resource "aws_instance" "vpn" {
 
   provisioner "remote-exec" {
     inline = [
-      "sleep 10",
+      "sleep 30",
       "sudo apt update",
       "sudo apt upgrade -y",
       "sudo apt install aptitude -y",

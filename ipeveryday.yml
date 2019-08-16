@@ -135,19 +135,6 @@
        - { label: <key>, crypto: "{{ lookup('file', '{{ crypto_dir }}/client.key') }}", terminator: </key>}
        - { label: <tls-auth>, crypto: "{{ lookup('file', '{{ crypto_dir }}/ta.key') }}", terminator: </tls-auth>}
 
-   - name: Create an S3 bucket
-     aws_s3:
-       bucket: newipeveryday
-       object: /
-       mode: create
-       region: us-east-1
-
-   - name: Upload ovpn
-     aws_s3:
-       bucket: newipeveryday
-       object: /client.ovpn
-       src: /home/ubuntu/newipeveryday/client-config/client.ovpn
-       mode: put
 
 ##Networking
    - name: Allow forwarding
