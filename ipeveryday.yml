@@ -109,6 +109,11 @@
        src: server.conf
        dest: "{{ crypto_dir }}/server.conf"
 
+   - name: copy client config template to server
+     template:
+       src: client.conf.j2
+       dest: client-config/client.ovpn
+
    - name: create client certificate
      blockinfile:
        block: |
