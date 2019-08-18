@@ -3,7 +3,6 @@ variable "cidr_block" {}
 variable "cidr_subnet" {}
 variable "private_key" {}
 variable "private_key_file" {}
-variable "transfer_pass" {}
 
 data "aws_ami" "ubuntu" {
   most_recent           = true
