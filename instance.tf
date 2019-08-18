@@ -119,7 +119,7 @@ resource "aws_instance" "vpn" {
       "sudo apt install python-pip -y",
       "sudo pip install ansible",
       "git clone https://github.com/2LargeFeet/newipeveryday.git",
-      "sudo ansible-playbook newipeveryday/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}, \"transfer_pass\": ${var.transfer_pass}}'"
+      "sudo ansible-playbook newipeveryday/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}}'"
     ]
 
     connection {
