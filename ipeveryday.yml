@@ -37,7 +37,6 @@
 
    - name: generate ta key
      command: "openvpn --genkey --secret {{ crypto_dir }}/ta.key"
-     register: ta.key
 
    - name: create CA csr
      openssl_csr:
