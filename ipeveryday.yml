@@ -56,7 +56,6 @@
      openssl_privatekey:
        path: "{{ crypto_dir }}/server.key"
        size: 2048
-     register: server.key
 
    - name: create server csr
      openssl_csr:
@@ -81,7 +80,6 @@
      openssl_privatekey:
        path: "{{ crypto_dir }}/client.key"
        size: 2048
-     register: client.key
 
    - name: create client csr
      openssl_csr:
