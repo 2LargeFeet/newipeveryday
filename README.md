@@ -46,5 +46,3 @@ You should be connected to your own, secure VPN. Your IP address will be from so
 Shoutouts to the great people at Hashicorp, Ansible, and OpenVPN for their fantastic software. Also, thanks to Justin Ellingwood at DigitalOcean with his HowTo guide for Ubuntu VPNs, which pointed me in the right direction for much of this.
 
 https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-ubuntu-16-04
-
-Copyright (C) 2019 Michael Gombos. 
