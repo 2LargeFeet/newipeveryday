@@ -33,8 +33,8 @@ Instructions to setup NewIPEveryday:
 
 8. Run the following commands from the cloned directory.
 
-        terraform init (Only need to run this the first time)
-        terraform taint aws_instance.vpn  (Don't worry if this errors on the first run)
+        terraform init #(Only need to run this the first time)
+        terraform taint aws_instance.vpn  #(Don't worry if this errors on the first run)
         terraform plan   -var-file="secure.tfvars"   -var-file="newipeveryday.tfvars"  
         terraform apply   -var-file="secure.tfvars"   -var-file="newipeveryday.tfvars"  
    (Admittedly, this can be improved)
