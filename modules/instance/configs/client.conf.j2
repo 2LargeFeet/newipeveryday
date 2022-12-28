@@ -1,0 +1,33 @@
+client
+;dev tap
+dev tun
+;dev-node MyTap
+proto tcp
+remote {{ server_ip }} 443
+;remote-random
+resolv-retry infinite
+nobind
+user nobody
+group nogroup
+persist-key
+persist-tun
+;mute-replay-warnings
+remote-cert-tls server
+;tls-auth ta.key 1
+;cipher x
+comp-lzo
+verb 3
+;mute 20
+cipher AES-128-CBC
+auth SHA256
+key-direction 1
+tls-client
+
+# script-security 2
+# up /etc/openvpn/update-resolv-conf
+# down /etc/openvpn/update-resolv-conf
+
+# {mark} ANSIBLE MANAGED BLOCK <ca>
+# {mark} ANSIBLE MANAGED BLOCK <cert>
+# {mark} ANSIBLE MANAGED BLOCK <key>
+# {mark} ANSIBLE MANAGED BLOCK <tls-auth>
