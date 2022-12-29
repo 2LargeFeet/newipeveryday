@@ -42,7 +42,7 @@ resource "aws_instance" "vpn" {
   }
 
   provisioner "local-exec" {
-    command     = "scp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:newipeveryday/client-config/client.ovpn client.ovpn"
+    command     = "scp -i vpn.pem -o 'StrictHostKeyChecking no' ubuntu@${aws_instance.vpn.public_ip}:newipeveryday/modules/instance/configs/client-config/client.ovpn client.ovpn"
     interpreter = ["PowerShell", "-Command"]
   }
 }
