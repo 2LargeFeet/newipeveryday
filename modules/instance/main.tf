@@ -16,8 +16,8 @@ resource "aws_instance" "vpn" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t2.micro"
   key_name                    = var.private_key
-  vpc_security_group_ids      = [aws_security_group.restrict.id]
-  subnet_id                   = aws_subnet.external.id
+  vpc_security_group_ids      = [var.security_group]
+  subnet_id                   = var.subnet
   associate_public_ip_address = true
 
   provisioner "remote-exec" {
@@ -30,7 +30,7 @@ resource "aws_instance" "vpn" {
       "sudo apt install python3-pip -y",
       "sudo pip install ansible",
       "git clone https://github.com/2LargeFeet/newipeveryday.git",
-      "sudo ansible-playbook newipeveryday/ipeveryday.yml --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}}'",
+      "sudo ansible-playbook newipeveryday/modules/instance/configs/ --extra-vars='{\"server_ip\": ${aws_instance.vpn.public_ip}}'",
     ]
 
     connection {
