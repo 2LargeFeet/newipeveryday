@@ -6,7 +6,7 @@ Instructions to setup NewIPEveryday:
 
 1. Install Git on your computer. Clone this repo to your local computer.
 
-2. Install OpenVPN. https://www.ovpn.com/en/guides/windows-openvpn-gui
+2. Install OpenVPN for windows. https://openvpn.net/community-downloads/
 
 3. Open the OpenVPN settings. Click on the `Advanced` tab. Enter the path to the cloned repo where it says 'Folder:'. Click OK.
 
@@ -14,22 +14,24 @@ Instructions to setup NewIPEveryday:
 
 5. In the AWS console, create an IAM user with the ability to edit security groups, create instances, and destroy instances.
 
-6. Create a file in the downloaded repo called 'secure.auto.tfvars'. It should contain the following.
+6. Create an Access Key for the IAM user you created. Make note of the access key ID and the access key secret in a secure way.
+
+7. Create a file in the downloaded repo called 'secure.auto.tfvars'. It should contain the following.
 
         access_key         = Access key for IAM user you created  
         secret_key         = Secret key for IAM user you created  
         private_key        = NAME of the private key you created
         private_key_file   = The private key you created  you created
-7. Install Terraform. https://www.terraform.io/downloads.html
+8. Install Terraform. https://www.terraform.io/downloads.html
 
-8. Run the following commands from the cloned directory.
+9. Run the following commands from the cloned directory.
 
         terraform init #(Only need to run this the first time)
         terraform taint aws_instance.vpn  #(Don't worry if this errors on the first run)
         terraform plan
         terraform apply
 
-9. Open OpenVPN. Right click the OpenVPN icon in your toolbar, and click `Connect`.
+10. Open OpenVPN. Right click the OpenVPN icon in your toolbar, and click `Connect`.
 
 You should be connected to your own, secure VPN. Your IP address will be from somewhere in `us-east-1` by default. To get a new IP address simply run the above terraform commands again and connect with OpenVPN.
 
