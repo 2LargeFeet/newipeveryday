@@ -1,4 +1,6 @@
-You will also need the ssh client enabled in windows 10 to use the transfer local-exec terraform command at the end. Otherwise, it's no big deal. It will fail and you'll need to use something like winscp to grab the client.ovpn file using scp or sftp. If you want to enable the SSH Client, here's a guide. https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse
+Are you a privacy concious individual? Do you not trust for profit VPN providers you heard about on YouTube? With New IP Everyday, you can easily create and connect to your own VPN server. Give yourself a new public IP address with `terraform destroy` and `terraform apply`.
+
+For this project, you will need terraform and the openvpn client installed on your windows computer. You will also need the ssh client enabled in windows 10 to use the transfer local-exec terraform command at the end. Without the SSH client, it will fail and you'll need to use something like winscp to grab the client.ovpn file using scp or sftp. If you want to enable the SSH Client, here's a guide. https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse
 
 Keep in mind, this tool will create a server in your AWS account restricted to your IP address. It's up to you to maintain it or destroy it if you don't want it anymore.
 
