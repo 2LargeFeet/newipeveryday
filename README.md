@@ -18,12 +18,12 @@ Instructions to setup NewIPEveryday:
 
 6. Create an Access Key for the IAM user you created. Make note of the access key ID and the access key secret in a secure way.
 
-7. Create a file in the downloaded repo called 'secure.auto.tfvars'. It should contain the following.
+7. Create a file in the downloaded repo called 'secure.auto.tfvars'. It should contain the following. REMEMBER: include the quotes.
 
-        access_key         = Access key for IAM user you created  
-        secret_key         = Secret key for IAM user you created  
-        private_key        = NAME of the private key you created
-        private_key_file   = The private key you created  you created
+        access_key         = "Access key for IAM user you created"  
+        secret_key         = "Secret key for IAM user you created"  
+        private_key        = "NAME of the private key you created"
+        private_key_file   = "The private key you created  you created"
 8. Install Terraform. https://www.terraform.io/downloads.html
 
 9. Run the following commands from the cloned directory.
